@@ -13,7 +13,6 @@
 ## 💡 Features
 
 - 📄 PDF and image analysis via Google Vision OCR
-- 🤖 GPT-based medical interpretation (OpenAI GPT-4o)
 - 🗣️ Supports English, Russian, and Kazakh
 - 📋 Point-based usage system with integrated Robokassa payments
 - 🔁 Recommends medical specialists based on findings
@@ -23,9 +22,7 @@
 
 ## 🛠 Tech Stack
 
-- **Frontend**: Telegram Bot API (custom UI), Vue.js (WIP)
-- **Backend**: Python, FastAPI, Telebot
-- **AI/ML**: OpenAI GPT-4o, Google Vision OCR, Tiktoken
+- **AI/ML**: OpenAI, Google Vision OCR, Tiktoken
 - **Database**: PostgreSQL
 - **Payments**: Robokassa Integration
 - **Languages**: HTML parsing for GPT-safe formatting (Telegram)
@@ -35,7 +32,7 @@
 ## 📦 Key Modules
 
 - `bot.py`: Telegram bot logic and message routing
-- `pdf_analysis.py`: OCR + GPT-4-based interpretation of lab reports
+- `pdf_analysis.py`: OCR + OpenAI based interpretation of lab reports
 - `database.py`: PostgreSQL interactions (user states, payments, invoices)
 - `payment.py`: Secure Robokassa integration and invoice validation
 - `translations.py`: Internationalization strings (KZ, RU, EN)
