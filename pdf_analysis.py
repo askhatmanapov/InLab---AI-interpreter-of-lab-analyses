@@ -22,9 +22,9 @@ client = vision.ImageAnnotatorClient.from_service_account_json(GOOGLE_CLOUD_CRED
 openai.api_key = OPENAI_API_KEY
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 MAX_MESSAGE_LENGTH = 4096
-DIRECT_THRESHOLD = 10000  #10000
-PRESUM_THRESHOLD = 40000  #40000
-CHUNK_TOKEN_LIMIT = 8000  #8000
+DIRECT_THRESHOLD = 10000 
+PRESUM_THRESHOLD = 40000
+CHUNK_TOKEN_LIMIT = 8000 
 
 languages = {
     '🇬🇧 English': 'en',
@@ -120,7 +120,7 @@ def handle_pdf_analysis(bot, message):
         del pdf_stream
         gc.collect()
 
-        def estimate_token_count(text, model_name="gpt-4o"):
+        def estimate_token_count(text, model_name=" "):
             bot.send_chat_action(user_id, 'typing')
             try:
                 encoding = tiktoken.encoding_for_model(model_name)
@@ -129,7 +129,7 @@ def handle_pdf_analysis(bot, message):
             # print(f"Token number: {len(encoding.encode(text))}")
             return len(encoding.encode(text))
 
-        def split_text_into_chunks(text, max_tokens, model_name="o3-mini"):
+        def split_text_into_chunks(text, max_tokens, model_name=" "):
             encoding = tiktoken.encoding_for_model(model_name)
             tokens = encoding.encode(text)
             chunks = []
@@ -140,73 +140,54 @@ def handle_pdf_analysis(bot, message):
             return chunks
         def pre_summarize_text(text, language):
             bot.send_chat_action(user_id, 'typing')
-            # print("Going through o3-mini")
+            # print("Going through")
             prompt = (
-                f"{language} Please shorten the following lab analysis text\n"
-                f"Include all informative values, reference intervals, units of measurement which will be used in the further interpretation\n"
-                f"Try to remove unnecessary details such as patient's personal info, date, addresses to shorten the text:\n\n"
-                f"{text}"
+                
             )
             response = openai.ChatCompletion.create(
-                model="o3-mini",
+                model=" ",
                 messages=[
-                    {"role": "system", "content": "You are a text shortener."},
+                    {"role": "system", "content": " "},
                     {"role": "user", "content": prompt}
                 ],
-                reasoning_effort="low"
+                reasoning_effort=" "
             )
-            # print("o3-mini response received")
+            # 
             return response.choices[0].message['content'].strip()
         
-        token_count = estimate_token_count(combined_text, model_name="gpt-4o")
+        token_count = estimate_token_count(combined_text, model_name=" ")
         
         if token_count <= DIRECT_THRESHOLD:
             aggregated_text = combined_text
-            # print("Sending direct to gpt-4o")
+            # print("Sending direct to ")
         elif token_count <= PRESUM_THRESHOLD:
-            # print("Sending to o3-mini")
+            # print("Sending to ")
             aggregated_text = pre_summarize_text(combined_text, language)
         else:
-            # print("Sending to o3-mini with chuncks")
-            chunks = split_text_into_chunks(combined_text, CHUNK_TOKEN_LIMIT, model_name="o3-mini")
+            # print("Sending to ")
+            chunks = split_text_into_chunks(combined_text, CHUNK_TOKEN_LIMIT, model_name=" ")
             pre_summaries = [pre_summarize_text(chunk, language) for chunk in chunks]
             aggregated_text = "\n".join(pre_summaries)
         
         specialists = get_all_specialists()
         specialists_str = ', '.join(specialists)
         final_prompt = (
-            f"{language} Interpret the lab analysis results\n"
-            "Focus only on the indicators, but on every single indicator. "
-            "If abnormalies exist, you can explain a bit deeper, their possible reasons, potential consequences and recommendations for further steps.\n"
-            f"Recommend specialists only from the following list: {specialists_str}\n"
-            "Format the response as JSON with the following structure:\n"
-            "{\n"
-            "  \"interpretation\": \"<interpretation_text>\",\n"
-            "  \"specialists\": [\"<specialist_1>\", \"<specialist_2>\", ...]\n"
-            "}\n\n"
-            "IGNORE PATIENT'S ANY PERSONAL INFO\n\n"
-            f"Lab Results Text:\n{aggregated_text}\nDo a bit summarize at the finish\n"
-            f"Ensure the output is valid JSON and <interpretation_text> is {language}"
-            "Do it suitable for display in a Telegram bot (using only '<b>...</b>' for bold formatting, '\n' or '\\n' for newline if needed and nothing else, because I use HTML parsing)."
+            
         )
         
         while True:
             bot.send_chat_action(user_id, 'typing')
             try:
-                # print("Interpreting using gpt-4o")
                 final_response = openai.ChatCompletion.create(
-                    model="gpt-4o",
+                    model=" ",
                     messages=[
                         {"role": "system", "content": (
-                            "You are an advanced medical expert.\n"
-                            "Our goal is to deeply interpret medical laboratory analysis results"
-                            "Provide a detailed and coherent interpretation of lab reports."
-                            "Provide actionable advice from third person point of view."
+                            
                         )},
                         {"role": "user", "content": final_prompt}
                     ],
-                    temperature=0.5,
-                    top_p=0.5
+                    temperature,
+                    top_p
                 )
                 response_text = final_response.choices[0].message['content'].strip()
                 # print("GPT Response:\n", response_text)
@@ -330,39 +311,24 @@ def handle_pdf_analysis(bot, message):
         while True: 
             bot.send_chat_action(user_id, 'typing')
             openai_prompt = (
-                f"{language} Interpret the lab analysis results\n"
-                "Focus only on the indicators, but on every single indicator. "
-                "If abnormalies exist, you can explain a bit deeper, their possible reasons, potential consequences and recommendations for further steps.\n"
-                f"Recommend specialists only from the following list: {specialists_str}\n"
-                "Format the response as JSON with the following structure:\n"
-                "{\n"
-                "  \"interpretation\": \"<interpretation_text>\",\n"
-                "  \"specialists\": [\"<specialist_1>\", \"<specialist_2>\", ...]\n"
-                "}\n\n"
-                "IGNORE PATIENT'S ANY PERSONAL INFO\n\n"
-                f"Lab Results Text:\n{combined_text}\nDo a bit summarize at the finish\n"
-                f"Ensure the output is valid JSON and <interpretation_text> is {language}"
-                "Do it suitable for display in a Telegram bot (using only '<b>...</b>' for bold formatting, '\n' or '\\n' for newline if needed and nothing else, because I use HTML parsing)."
+                
             )
             # Send the prompt to OpenAI
             try:
-                # print("Interpreting using gpt-4o")
+                # print("Interpreting using")
                 openai_response = openai.ChatCompletion.create(
-                    model="gpt-4o",
+                    model=" ",
                     messages=[
                         {"role": "system", "content": (
-                            "You are an advanced medical expert.\n"
-                            "Our goal is to deeply interpret medical laboratory analysis results"
-                            "Provide a detailed and coherent interpretation of lab reports."
-                            "Provide actionable advice from third person point of view."
+                           
                         )},
                         {"role": "user", "content": openai_prompt}
                     ],
-                    temperature=0.5,
-                    top_p=0.5
+                    temperature,
+                    top_p
                 )
                 response_text = openai_response.choices[0].message['content'].strip()
-                # print("GPT Response:\n", response_text)
+                
             except openai.error.OpenAIError as e:
                 print(f"OpenAI API error: {e}")
                 send_message(user_id, "error_api", parse_mode="HTML")
